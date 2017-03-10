@@ -24,6 +24,7 @@
 double *loadPanel(char *panelfile, char *density, int *numSing);
 void setupCOEF(ssystem *sys);
 void createTree(cube *cb);
+void compMomAll(cube *cb, int ifirst);
 void compTree(cube *cb, double *pot);
 void directSum(ssystem *sys, double *dpot);
 void printError(ssystem *sys, double *pot, double *dpot);
