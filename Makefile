@@ -1,10 +1,10 @@
 #
-# linux
+# linux & Mac
+# icc version doesn't work yet
 LIBS = -llapack -lblas -lm
 
 
 CFLAGS = -O2
-#CFLAGS  = -g
 CC = gcc -c
 LD = gcc
 
