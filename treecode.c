@@ -91,8 +91,6 @@ void setupCOEF(ssystem *sys) {
   cb->level = 0;
   cb->nKids = 0;
   cb->existMom = 0;
-  for ( i=0; i<8; i++ )
-    CALLOC(cb->kids[i], 1, cube, ON, ACUBES);
 
   CALLOC(orderarr, nPnts, int, ON, AMISC);
 
