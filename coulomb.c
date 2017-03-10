@@ -46,8 +46,24 @@ int main(int nargs, char *argv[]){
   sprintf(panelfile, "1a63");
   sys->kappa = 1.0;
   sys->theta = 0.8;
-  sys->order = 9;
+  sys->order = 3;
   sys->maxparCube = 500;
+
+  for ( i=1; i<nargs; i++ )
+    if ( argv[i][0] == '-' )
+      switch ( argv[i][1] ) {
+      case 'p': sys->order = atoi( argv[i]+3 );
+        break;
+      case 'r': sys->theta = atof( argv[i]+3 );
+        break;
+      case 'd': strcpy(density,argv[i]+3);
+        break;
+      case 'n': sys->maxparCube = atoi( argv[i]+3 );
+        break;
+      }
+    else
+      strcpy(panelfile,argv[i]);
+
   sys->positions = loadPanel(panelfile, density, &nPnts);
   sys->nPnts = nPnts;
   CALLOC(sys->topCube, 1, cube, ON, ACUBES);
