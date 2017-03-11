@@ -26,7 +26,8 @@ struct ssystem {
   int nCubes;               /* nr of finest cube level */
   int layer;                /* single layer=0; double layer=1; adjoint=2 */
   int *nMom;                /* number of moments (as a function of order) */
-  int maxSngs;              /* max number of panels in a finest level cube */
+  int maxLev;               /* max level of the system */
+  int minLev;
   int max1Nbrs;             /* max number of frist neighbors that a cube can have */
   int *orderarr;            /* where the point is originally from */
   int order;                /* order */

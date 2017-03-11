@@ -22,6 +22,7 @@
 
 /* routines used by the main routine */
 double *loadPanel(char *panelfile, char *density, int *numSing);
+void MemCountInit();
 void setupCOEF(ssystem *sys);
 void createTree(cube *cb);
 void compMomAll(cube *cb, int ifirst);
@@ -50,21 +51,6 @@ int main(int nargs, char *argv[]){
   sys->order = 3;
   sys->maxparCube = 500;
 
-  for ( i=1; i<nargs; i++ )
-    if ( argv[i][0] == '-' )
-      switch ( argv[i][1] ) {
-      case 'p': sys->order = atoi( argv[i]+3 );
-        break;
-      case 'r': sys->theta = atof( argv[i]+3 );
-        break;
-      case 'd': strcpy(density,argv[i]+3);
-        break;
-      case 'n': sys->maxparCube = atoi( argv[i]+3 );
-        break;
-      }
-    else
-      strcpy(panelfile,argv[i]);
-
   sys->positions = loadPanel(panelfile, density, &nPnts);
   sys->nPnts = nPnts;
   CALLOC(sys->topCube, 1, cube, ON, ACUBES);
@@ -73,7 +59,6 @@ int main(int nargs, char *argv[]){
 
   CALLOC(pot, nPnts, double, ON, AMISC);
   CALLOC(dpot, nPnts, double, ON, AMISC);
-
 
   /* setup treecode coefficients */
   setupCOEF(sys);
@@ -99,11 +84,7 @@ int main(int nargs, char *argv[]){
   printf("Treecode compute Tree time %d sec %d msec\n", msec/1000, msec%1000);
 
   /* compute direct sum */
-  start = clock();
   directSum(sys, dpot);
-  diff = clock() - start;
-  msec = diff * 1000 / CLOCKS_PER_SEC;
-  printf("Direct sum time %d sec %d msec\n", msec/1000, msec%1000);
 
   /* error estimate, then print memory usage */
   printf("  \n");
@@ -162,6 +143,17 @@ void printError(ssystem *sys, double *pot, double *dpot) {
   printf("the relative err: %.15f\n",relerr);
 } /* printError */
 
+/* initial the memory counters */
+void MemCountInit() {
+  memcount = 0;
+  memPVE = 0;
+  memCUBES = 0;
+  memACCUBE = 0;
+  memQ2M = 0;
+  memAFCUBE = 0;
+  memMISC = 0;
+}
+
 void printMemory(ssystem *sys) {
   double ratio;
   long total;
@@ -172,5 +164,10 @@ void printMemory(ssystem *sys) {
   printf("        Positions/Charges     %lg MB\n", ((double)memXYZQ)/MEG);
   printf("        Tree                  %lg MB\n", ((double)memCUBES)/MEG);
   printf("        System                %lg MB\n", ((double)memMISC)/MEG);
-
+  /*
+  printf("Time for M2M %d sec %d msec\n",calculM2MTime/1000,calculM2MTime%1000);
+  printf("Time for M2L %d sec %d msec\n",calculM2LTime/1000,calculM2LTime%1000);
+  printf("Time for L2L %d sec %d msec\n",calculL2LTime/1000,calculL2LTime%1000);
+  printf("Time for LDS %d sec %d msec\n",calculLDSTime/1000,calculLDSTime%1000);
+  */
 }

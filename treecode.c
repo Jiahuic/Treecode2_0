@@ -17,7 +17,7 @@ double *cf, *cf1, *cf2, *cf3;
 double ***a, ***b;
 double *positions, *charges, *potential;
 double kappa, theta;
-int order, nPnts, nMom, *orderarr, maxparCube, minlevel=50000;
+int order, nPnts, nMom, *orderarr, maxparCube, *minlevel, *maxlevel;
 int ***idx3;
 
 /* locate coefficients and setup the topCube */
@@ -33,6 +33,10 @@ void setupCOEF(ssystem *sys) {
   kappa = sys->kappa;
   theta = sys->theta;
   nPnts=sys->nPnts;
+  sys->maxLev = 0;
+  sys->minLev = 50000;
+  maxlevel = &(sys->maxLev);
+  minlevel = &(sys->minLev);
 
   CALLOC(a, order+1, double**, ON, AMISC);
   CALLOC(b, order+1, double**, ON, AMISC);
@@ -240,8 +244,8 @@ void createTree(cube *cb) {
       xyzmms[0][2*k+1] = cb->max[k];
     }
     for ( k=0; k<8; k++ ) {
-      ind[i][0] = 0;
-      ind[i][1] = 0;
+      ind[k][0] = 0;
+      ind[k][1] = 0;
     }
     ind[0][0] = cb->beg;
     ind[0][1] = cb->end;
@@ -280,7 +284,8 @@ void createTree(cube *cb) {
     cb->nKids = nRealKids;
   }
   else {
-    if ( cb->level < minlevel ) minlevel = cb->level;
+    if ( cb->level < *minlevel ) *minlevel = cb->level;
+    if ( cb->level > *maxlevel ) *maxlevel = cb->level;
   }
 
 } /* createTree */
@@ -293,16 +298,7 @@ void compMom( cube *cb ) {
     dx = positions[3*j] - cb->ctr[0];
     dy = positions[3*j+1] - cb->ctr[1];
     dz = positions[3*j+2] - cb->ctr[2];
-/*
-    for ( i=n=0; n<=order; n++ ){
-      for ( i1=0; i1<=n; i1++ ){
-        for ( i2=0; i2<=n-i1; i2++, i++ ){
-          i3 = n-i1-i2;
-          cb->mom[i] += charges[j]*pow(dx,i1)*pow(dy,i2)*pow(dz,i3);
-        }
-      }
-    }
-*/
+
     tx = 1.0;
     for ( i1=0; i1<order+1; i1++ ) {
       ty = 1.0;
@@ -541,7 +537,6 @@ void compTree(cube *cb, double *pot) {
   double energy, tx, tq, point[3];
   potential = pot;
 
-  //for ( i=0; i<100; i++ ) {
   for ( i=0; i<nPnts; i++ ) {
     energy = 0.0;
     for ( k=0; k<3; k++ ) point[k] = positions[3*i+k];
