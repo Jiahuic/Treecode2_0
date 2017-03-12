@@ -30,12 +30,14 @@ void compTree(cube *cb, double *pot);
 void directSum(ssystem *sys, double *dpot);
 void printError(ssystem *sys, double *pot, double *dpot);
 void printMemory(ssystem *sys);
-void freeCOEF(ssystem *sys, double *pot, double *dpot);
+void freeMomCube(cube *cb);
+void freeCOEF(ssystem *sys);
 
 int main(int nargs, char *argv[]){
   char panelfile[80], density[80];
   int i, j, k, n, nPnts;
   double *pot, *dpot, abserr, relerr;
+  int itheta, ntheta, imaxpar, nmaxpar, iorder, norder, step=0;
   ssystem *sys;
 
   /* time variables */
@@ -44,12 +46,9 @@ int main(int nargs, char *argv[]){
 
   /* set up system */
   CALLOC(sys, 1, ssystem, ON, AMISC);
-  sprintf(density, "3");
+  sprintf(density, "20");
   sprintf(panelfile, "1a63");
   sys->kappa = 1.0;
-  sys->theta = 0.8;
-  sys->order = 3;
-  sys->maxparCube = 500;
 
   sys->positions = loadPanel(panelfile, density, &nPnts);
   sys->nPnts = nPnts;
@@ -60,45 +59,60 @@ int main(int nargs, char *argv[]){
   CALLOC(pot, nPnts, double, ON, AMISC);
   CALLOC(dpot, nPnts, double, ON, AMISC);
 
-  /* setup treecode coefficients */
-  setupCOEF(sys);
+  printf("\n <<< %s den=%s nPnts=%d >>>\n", panelfile, density, nPnts);
 
-  /* build tree */
-  start = clock();
-  createTree(sys->topCube);
-  diff = clock() - start;
-  msec = diff * 1000 / CLOCKS_PER_SEC;
-  printf("Treecode create Tree time %d sec %d msec\n", msec/1000, msec%1000);
+  norder = 5;
+  nmaxpar = 4;
+  ntheta = 4;
 
-  start = clock();
-  compMomAll(sys->topCube, 1);
-  diff = clock() - start;
-  msec = diff * 1000 / CLOCKS_PER_SEC;
-  printf("Moments computation time %d sec %d msec\n", msec/1000, msec%1000);
+  sys->theta = 0.2;
+  for ( itheta=0; itheta<ntheta; itheta++ ) {
+    sys->maxparCube = 200;
+    for ( imaxpar=0; imaxpar<nmaxpar; imaxpar++ ) {
+      sys->order = 1;
+      for ( iorder=0; iorder<norder; iorder++ ) {
+        MemCountInit();
+        printf("\n--- Theta=%lg No.=%d ord=%d\n", sys->theta,
+               sys->maxparCube, sys->order );
 
-  /* compute treecode, output as "pot" */
-  start = clock();
-  compTree(sys->topCube, pot);
-  diff = clock() - start;
-  msec = diff * 1000 / CLOCKS_PER_SEC;
-  printf("Treecode compute Tree time %d sec %d msec\n", msec/1000, msec%1000);
+        /* setup treecode coefficients */
+        setupCOEF(sys);
 
-  /* compute direct sum */
-  directSum(sys, dpot);
+        for ( i=0; i<nPnts; i++ ) pot[i] = 0.0;
+        /* build tree */
+        start = clock();
+        createTree(sys->topCube);
+        compMomAll(sys->topCube, 1);
+        compTree(sys->topCube, pot);
+        diff = clock() - start;
+        msec = diff * 1000 / CLOCKS_PER_SEC;
+        printf("Treecode time %d sec %d msec\n", msec/1000, msec%1000);
 
-  /* error estimate, then print memory usage */
-  printf("  \n");
-  printf("Run parameteres:  \n");
-  printf("                   numpars    = %d\n",sys->nPnts);
-  printf("                   kappa      = %f\n",sys->kappa);
-  printf("                   theta      = %f\n",sys->theta);
-  printf("                   order      = %d\n",sys->order);
-  printf("                   maxparnode = %d\n",sys->maxparCube);
-  printf("                   max level  = %d\n",sys->maxLev);
-  printError(sys, pot, dpot);
-  printMemory(sys);
+        if ( step++ == 0 ) {
+          for ( i=0; i<nPnts; i++ ) dpot[i] = 0.0;
+          directSum(sys, dpot);
+        }
 
-  freeCOEF(sys, pot, dpot);
+        /* error estimate, then print memory usage */
+        printError(sys, pot, dpot);
+        printMemory(sys);
+        freeCOEF(sys);
+
+        sys->order += 2;
+      }
+      sys->maxparCube += 200;
+      step = 0;
+    }
+    sys->theta += 0.2;
+  }
+
+  free(sys->positions);
+  free(sys->charges);
+  free(pot);
+  free(dpot);
+
+  free(sys->topCube);
+  free(sys);
 
 }
 
@@ -146,11 +160,7 @@ void printError(ssystem *sys, double *pot, double *dpot) {
 /* initial the memory counters */
 void MemCountInit() {
   memcount = 0;
-  memPVE = 0;
   memCUBES = 0;
-  memACCUBE = 0;
-  memQ2M = 0;
-  memAFCUBE = 0;
   memMISC = 0;
 }
 
@@ -164,10 +174,5 @@ void printMemory(ssystem *sys) {
   printf("        Positions/Charges     %lg MB\n", ((double)memXYZQ)/MEG);
   printf("        Tree                  %lg MB\n", ((double)memCUBES)/MEG);
   printf("        System                %lg MB\n", ((double)memMISC)/MEG);
-  /*
-  printf("Time for M2M %d sec %d msec\n",calculM2MTime/1000,calculM2MTime%1000);
-  printf("Time for M2L %d sec %d msec\n",calculM2LTime/1000,calculM2LTime%1000);
-  printf("Time for L2L %d sec %d msec\n",calculL2LTime/1000,calculL2LTime%1000);
-  printf("Time for LDS %d sec %d msec\n",calculLDSTime/1000,calculLDSTime%1000);
-  */
+
 }

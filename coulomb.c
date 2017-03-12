@@ -118,6 +118,13 @@ int main(int nargs, char *argv[]){
   printMemory(sys);
 
   freeCOEF(sys, pot, dpot);
+  free(sys->positions);
+  free(sys->charges);
+  free(pot);
+  free(dpot);
+
+  free(sys->topCube);
+  free(sys);
 
 }
 

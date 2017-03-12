@@ -15,7 +15,7 @@ LD = gcc
 HEADERS = treeGlobal.h  treecode.h
 OBJ = readin.o treeGlobal.o treecode.o
 
-all: coulomb
+all: coulomb paratest
 
 %.o: %.c $(HEADERS) Makefile
 	$(CC) $(CFLAGS) -o $@ $<

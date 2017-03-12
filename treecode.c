@@ -567,7 +567,7 @@ void freeMomCube(cube *cb) {
 } /* freeMomCube */
 
 /* free memory of coefficients */
-void freeCOEF(ssystem *sys, double *pot, double *dpot) {
+void freeCOEF(ssystem *sys) {
   int i, j, i1, i2;
 
   for ( i1=0; i1<=order; i1++ ) {
@@ -594,13 +594,6 @@ void freeCOEF(ssystem *sys, double *pot, double *dpot) {
   free(b);
 
   free(orderarr);
-  free(sys->positions);
-  free(sys->charges);
-  free(pot);
-  free(dpot);
-
   freeMomCube(sys->topCube);
-  free(sys->topCube);
-  free(sys);
 
 } /* freeCOEF */
