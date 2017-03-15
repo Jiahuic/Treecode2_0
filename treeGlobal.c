@@ -8,6 +8,7 @@ int calculM2MTime, calculM2LTime, calculL2LTime, calculLDSTime;
 long memcount=0;    /* total memory */
 long memXYZQ=0;      /* x, y, z, charges */
 long memCUBES=0;    /* cube tree */
+long memAMOM=0;
 long memACCUBE=0;      /* treecode coeffecients */
 long memMISC=0;     /* all other stuff */
 

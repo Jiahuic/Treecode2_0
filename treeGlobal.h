@@ -53,6 +53,7 @@
 /* memory types */
 #define AXYZQ 1      /* x, y, z, charges */
 #define ACUBES 2    /* cube tree */
+#define AMOM 3
 #define AMISC 4     /* misc. memory such as workspaces */
 
 
@@ -85,8 +86,9 @@
      }                                                                      \
      else {                                                                 \
        memcount += ((NUM)*sizeof(TYPE));                                    \
-       if(MTYP == AXYZQ) memXYZQ += ((NUM)*sizeof(TYPE));                     \
+       if(MTYP == AXYZQ) memXYZQ += ((NUM)*sizeof(TYPE));                   \
        else if(MTYP == ACUBES) memCUBES += ((NUM)*sizeof(TYPE));            \
+       else if(MTYP == AMOM) memAMOM += ((NUM)*sizeof(TYPE));               \
        else if(MTYP == AMISC) memMISC += ((NUM)*sizeof(TYPE));              \
        else {                                                               \
          (void)fprintf(stdout, "CALLOC: unknown memory type %d\n", MTYP);   \
@@ -113,7 +115,7 @@ extern double solveTimeNoPC, solveTimePC;
 extern int calculM2MTime, calculM2LTime, calculL2LTime, calculLDSTime;
 /* counts of memory usage */
 extern long memcount;
-extern long memXYZQ, memCUBES, memMISC;
+extern long memXYZQ, memCUBES, memMISC, memAMOM;
 /* counts of kernel evaluations */
 extern long numKernRealEval, numKernCplxEval;
 /* misc constants */

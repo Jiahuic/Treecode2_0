@@ -27,6 +27,7 @@ void setupCOEF(ssystem *sys);
 void createTree(cube *cb);
 void compMomAll(cube *cb, int ifirst);
 void compTree(cube *cb, double *pot);
+void cubeNumber(ssystem *sys);
 void directSum(ssystem *sys, double *dpot);
 void printError(ssystem *sys, double *pot, double *dpot);
 void printMemory(ssystem *sys);
@@ -61,9 +62,9 @@ int main(int nargs, char *argv[]){
 
   printf("\n <<< %s den=%s nPnts=%d >>>\n", panelfile, density, nPnts);
 
-  norder = 5;
-  nmaxpar = 4;
-  ntheta = 4;
+  norder = 1;
+  nmaxpar = 1;
+  ntheta = 1;
 
   sys->theta = 0.2;
   for ( itheta=0; itheta<ntheta; itheta++ ) {
@@ -83,14 +84,15 @@ int main(int nargs, char *argv[]){
         start = clock();
         createTree(sys->topCube);
         compMomAll(sys->topCube, 1);
-        compTree(sys->topCube, pot);
+        //compTree(sys->topCube, pot);
         diff = clock() - start;
         msec = diff * 1000 / CLOCKS_PER_SEC;
         printf("Treecode time %d sec %d msec\n", msec/1000, msec%1000);
 
         if ( step++ == 0 ) {
           for ( i=0; i<nPnts; i++ ) dpot[i] = 0.0;
-          directSum(sys, dpot);
+          cubeNumber(sys);
+          //directSum(sys, dpot);
         }
 
         /* error estimate, then print memory usage */
@@ -161,6 +163,7 @@ void printError(ssystem *sys, double *pot, double *dpot) {
 void MemCountInit() {
   memcount = 0;
   memCUBES = 0;
+  memAMOM = 0;
   memMISC = 0;
 }
 
@@ -173,6 +176,27 @@ void printMemory(ssystem *sys) {
   printf("\nMemory: Total                 %lg MB\n", ((double)memcount)/MEG);
   printf("        Positions/Charges     %lg MB\n", ((double)memXYZQ)/MEG);
   printf("        Tree                  %lg MB\n", ((double)memCUBES)/MEG);
+  printf("        Moments               %lg MB\n", ((double)memAMOM)/MEG);
   printf("        System                %lg MB\n", ((double)memMISC)/MEG);
 
+}
+
+void cubeSelfCount(cube *cb, int *counter){
+  int i;
+  cube *kid;
+
+  for ( i=0; i<cb->nKids; i++ ) {
+    kid = cb->kids[i];
+    cubeSelfCount(kid, counter);
+    (*counter)++;
+  }
+}
+
+/* count cube number for each level */
+void cubeNumber(ssystem *sys) {
+  int i, lev, cubeN, tcubeN=0;
+  cube *cb=sys->topCube;
+
+  cubeSelfCount(cb, &tcubeN);
+  printf("Total cube number %d level %d\n",tcubeN,sys->maxLev);
 }

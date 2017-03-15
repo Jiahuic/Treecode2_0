@@ -323,7 +323,7 @@ void compMomAll( cube *cb, int ifirst ) {
   double dx,dy,dz,tx,ty,tz;
 
   if ( cb->existMom == 0 && ifirst == 0 ){
-    CALLOC(cb->mom, nMom, double, ON, ACUBES);
+    CALLOC(cb->mom, nMom, double, ON, AMOM);
     for ( k=0; k<nMom; k++ ) cb->mom[k] = 0.0;
 
     compMom(cb);

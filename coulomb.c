@@ -26,6 +26,7 @@ void setupCOEF(ssystem *sys);
 void createTree(cube *cb);
 void compMomAll(cube *cb, int ifirst);
 void compTree(cube *cb, double *pot);
+void cubeNumber(ssystem *sys);
 void directSum(ssystem *sys, double *dpot);
 void printError(ssystem *sys, double *pot, double *dpot);
 void printMemory(ssystem *sys);
@@ -180,4 +181,24 @@ void printMemory(ssystem *sys) {
   printf("        Tree                  %lg MB\n", ((double)memCUBES)/MEG);
   printf("        System                %lg MB\n", ((double)memMISC)/MEG);
 
+}
+
+void cubeSelfCount(cube *cb, int counter){
+  int i;
+  cube *kid;
+
+  for ( i=0; i<cb->nKids; i++ ) {
+    kid = cb->kids[i];
+    cubeSelfCount(kid, counter);
+    counter++;
+  }
+}
+
+/* count cube number for each level */
+void cubeNumber(ssystem *sys) {
+  int i, lev, cubeN, tcubeN=0;
+  cube *cb=sys->topCube;
+
+  cubeSelfCount(cb, tcubeN);
+  printf("Total cube number %d\n",tcubeN);
 }
